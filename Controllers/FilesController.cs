@@ -31,7 +31,7 @@ namespace School.Controllers
 
         public IFormFile FormFile { get; set; }
 
-        public FilesController(ApiContext context, IWebHostEnvironment webHostEnvironment, 
+        public FilesController(ApiContext context, IWebHostEnvironment webHostEnvironment,
             ILogger<FilesController> logger, IAuthorizationService authorizationService,
             IUserContextService userContextService)
         {
@@ -99,10 +99,10 @@ namespace School.Controllers
         }
 
         [HttpPost("createFile", Name = "createFile")]
-        public async Task<ActionResult<FileData>> PostFile([FromForm]FileData file)
+        public async Task<ActionResult<FileData>> PostFile([FromForm] FileData file)
         {
             try
-            {   
+            {
                 using (var target = new MemoryStream())
                 {
                     FormFile.CopyTo(target);
@@ -128,9 +128,9 @@ namespace School.Controllers
         }
 
 
-       //PUT: /api/putfile
-       [HttpPut("editFile/{id:int}", Name = "editFile")]
-       [Authorize(Roles = "Admin")]
+        //PUT: /api/putfile
+        [HttpPut("editFile/{id:int}", Name = "editFile")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditFile(int id, [FromForm] FileData file)
         {
             if (id != file.ID)
@@ -170,7 +170,7 @@ namespace School.Controllers
 
         //PUT
         [HttpPut("edit/{id:int}", Name = "edit")]
-        public async Task<IActionResult> UpdateFile(int id, [FromForm]FileData file)
+        public async Task<IActionResult> UpdateFile(int id, [FromForm] FileData file)
         {
             if (id != file.ID)
             {
@@ -216,7 +216,7 @@ namespace School.Controllers
         }
 
         [HttpPatch("updateFile/{id:int}", Name = "patch")]
-        public async Task<IActionResult> UpdateFilePatch(int id, [FromBody]JsonPatchDocument<FileData> fileUpdates)
+        public async Task<IActionResult> UpdateFilePatch(int id, [FromBody] JsonPatchDocument<FileData> fileUpdates)
         {
             if (fileUpdates == null)
             {
@@ -250,10 +250,10 @@ namespace School.Controllers
         {
             _logger.LogWarning($"File with id: {id}, DELETE action invoked");
             var file = await _context.Files.FindAsync(id);
-             if (file == null)
-             {
+            if (file == null)
+            {
                 throw new NotFoundException("File not found");
-             }
+            }
 
             var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, file, new ResourceOperationRequirement(ResourceOperation.Delete)).Result;
 
@@ -272,6 +272,5 @@ namespace School.Controllers
         {
             return _context.Files.Any(e => e.ID == id);
         }
-
     }
 }
