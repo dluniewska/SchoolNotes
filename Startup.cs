@@ -91,7 +91,7 @@ namespace School
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, RolesSeeder seeder)
         {
             app.UseResponseCaching(); 
-            seeder.Seed();
+            //seeder.Seed();
 
             if (env.IsDevelopment())
             {
