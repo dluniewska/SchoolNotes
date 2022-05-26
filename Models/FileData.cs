@@ -10,6 +10,7 @@ namespace School.Models
 {
     public partial class FileData
     {
+        [DatabaseGeneratedAttribute(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         [Required]
         [MaxLength(30)]
@@ -20,7 +21,7 @@ namespace School.Models
         [Required]
         public string Category { get; set; }
         public string? UploadedBy { get; set; }
-        public virtual User CreatedBy { get; set; }
+        //public virtual User? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public string fileUploadName { get; set; }
         public byte[] FileUpload { get; set; }

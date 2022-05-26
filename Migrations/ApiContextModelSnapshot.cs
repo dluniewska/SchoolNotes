@@ -30,9 +30,6 @@ namespace School.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CreatedByID")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime");
 
@@ -57,8 +54,6 @@ namespace School.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("CreatedByID");
-
                     b.ToTable("Files");
                 });
 
@@ -76,59 +71,6 @@ namespace School.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("Roles");
-                });
-
-            modelBuilder.Entity("School.Models.User", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("RoleID");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("School.Models.FileData", b =>
-                {
-                    b.HasOne("School.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedByID");
-
-                    b.Navigation("CreatedBy");
-                });
-
-            modelBuilder.Entity("School.Models.User", b =>
-                {
-                    b.HasOne("School.Models.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
                 });
 #pragma warning restore 612, 618
         }

@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using School.Authorization;
 using School.DTO;
-using School.DTO.Validators;
+//using School.DTO.Validators;
 using School.Helpers;
 using School.Middleware;
 using School.Models;
@@ -60,15 +60,15 @@ namespace School
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
                 };
             });
-            services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
+            //services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
             services.AddControllers().AddNewtonsoftJson().AddFluentValidation(); ;
             services.AddDbContext<ApiContext>(options => options.UseSqlServer(Configuration.GetConnectionString("APIContext")));
             services.AddScoped<RolesSeeder>();
             services.AddAutoMapper(this.GetType().Assembly);
             services.AddScoped<IFilesService, FilesService>();
-            services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-            services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
+            //services.AddScoped<IAccountService, AccountService>();
+            //services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            //services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
             services.AddScoped<ErrorHandlingMiddleware>();
             services.AddScoped<RequestTimeMiddleware>();
             services.AddScoped<IUserContextService, UserContextService>();

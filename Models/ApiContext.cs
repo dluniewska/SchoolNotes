@@ -15,7 +15,7 @@ namespace School.Models
         }
 
         public DbSet<FileData> Files { get; set; }
-        public DbSet<User> Users { get; set; }
+        //public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace School.Models
             {
                 entity.Property(x => x.CreatedOn).HasColumnType("datetime");
             });
-            modelBuilder.Entity<User>().Property(u => u.Email).IsRequired();
+            //modelBuilder.Entity<User>().Property(u => u.Email).IsRequired();
             modelBuilder.Entity<Role>().Property(u => u.Name).IsRequired();
 
             onModelCreatingPartial(modelBuilder);

@@ -109,10 +109,10 @@ namespace School.Controllers
                     file.FileUpload = target.ToArray();
                 }
                 file.CreatedOn = DateTime.Now;
-                var userId = _userContextService.GetUserId;
-                var user = await _context.Users.FindAsync(userId);
-                file.UploadedBy = user.Email;
-                file.UploadedBy = "user";
+                //var userId = _userContextService.GetUserId;
+                //var user = await _context.Users.FindAsync(userId);
+                //file.UploadedBy = user.Email;
+                //file.UploadedBy = "user";
                 var filename = FormFile.FileName;
                 file.fileUploadName = filename;
                 _context.Files.Add(file);
@@ -121,6 +121,8 @@ namespace School.Controllers
             }
             catch (Exception e)
             {
+                _logger.LogError(e.ToString());
+                return BadRequest(e.ToString());
                 throw;
             }
         }
