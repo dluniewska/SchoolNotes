@@ -23,7 +23,6 @@ namespace School.Models
         public virtual User CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public string fileUploadName { get; set; }
-        [Required]
         public byte[] FileUpload { get; set; }
 
     }

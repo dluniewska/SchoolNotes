@@ -20,7 +20,7 @@ namespace School.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class FilesController : ControllerBase
     {
         private readonly ApiContext _context;
@@ -114,8 +114,6 @@ namespace School.Controllers
                 file.UploadedBy = user.Email;
                 file.UploadedBy = "user";
                 var filename = FormFile.FileName;
-                //var extension = fileName.Split(".")[1];
-
                 file.fileUploadName = filename;
                 _context.Files.Add(file);
                 await _context.SaveChangesAsync();
