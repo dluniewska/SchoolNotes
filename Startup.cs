@@ -63,7 +63,7 @@ namespace School
             //services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
             services.AddControllers().AddNewtonsoftJson().AddFluentValidation(); ;
             services.AddDbContext<ApiContext>(options => options.UseSqlServer(Configuration.GetConnectionString("APIContext")));
-            services.AddScoped<RolesSeeder>();
+            //services.AddScoped<RolesSeeder>();
             services.AddAutoMapper(this.GetType().Assembly);
             services.AddScoped<IFilesService, FilesService>();
             //services.AddScoped<IAccountService, AccountService>();
