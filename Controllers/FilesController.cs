@@ -51,9 +51,9 @@ namespace School.Controllers
             {
                 return await _context.Files.ToListAsync();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Error retriving data from database");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error retriving data from database {e}");
             }
         }
         // GET: /api
