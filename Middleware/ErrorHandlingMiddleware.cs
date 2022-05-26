@@ -42,7 +42,7 @@ namespace School.Middleware
                 _logger.LogError(e, e.Message);
 
                 context.Response.StatusCode = 500;
-                await context.Response.WriteAsync("Something went wrong...");
+                await context.Response.WriteAsync($"Something went wrong... {e.Message}");
             }
         }
     }
