@@ -41,25 +41,25 @@ namespace School
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var authenticationSettings = new AuthenticationSettings();
-            Configuration.GetSection("Authentication").Bind(authenticationSettings);
-            services.AddSingleton(authenticationSettings);
-            services.AddAuthentication(option => 
-            {
-                option.DefaultAuthenticateScheme = "Bearer";
-                option.DefaultScheme= "Bearer";
-                option.DefaultChallengeScheme= "Bearer";
-            }).AddJwtBearer(cfg => 
-            {
-                cfg.RequireHttpsMetadata = false;
-                cfg.SaveToken = true;
-                cfg.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = authenticationSettings.JwtIssuer,
-                    ValidAudience = authenticationSettings.JwtIssuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
-                };
-            });
+            //var authenticationSettings = new AuthenticationSettings();
+            //Configuration.GetSection("Authentication").Bind(authenticationSettings);
+            //services.AddSingleton(authenticationSettings);
+            //services.AddAuthentication(option => 
+            //{
+            //    option.DefaultAuthenticateScheme = "Bearer";
+            //    option.DefaultScheme= "Bearer";
+            //    option.DefaultChallengeScheme= "Bearer";
+            //}).AddJwtBearer(cfg => 
+            //{
+            //    cfg.RequireHttpsMetadata = false;
+            //    cfg.SaveToken = true;
+            //    cfg.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidIssuer = authenticationSettings.JwtIssuer,
+            //        ValidAudience = authenticationSettings.JwtIssuer,
+            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authenticationSettings.JwtKey)),
+            //    };
+            //});
             //services.AddScoped<IAuthorizationHandler, ResourceOperationRequirementHandler>();
             services.AddControllers().AddNewtonsoftJson().AddFluentValidation(); ;
             services.AddDbContext<ApiContext>(options => options.UseSqlServer(Configuration.GetConnectionString("APIContext")));
