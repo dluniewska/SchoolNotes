@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -29,7 +30,31 @@ namespace School.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IUserContextService _userContextService;
 
+        string blobStorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=schoolnotesstorage;AccountKey=zN8aJJQ46JsRQxPp2lhdbsEfBn6tsdD1dCXWhEM0xzdXKu1nHuuRRHrquagEJKb5IgnlP6pTTJTY+AStkpUsFA==;EndpointSuffix=core.windows.net";
+        string blobStorageContainerName = "pictures";
+        BlobContainerClient container;
+
         public IFormFile FormFile { get; set; }
+
+        private byte[] BlobAsByte(string blobName)
+        {
+            if (container.GetBlobs().Any(c => c.Name == blobName))
+            {
+                var blob = container.GetBlobClient(blobName);
+
+                var memoryStream = new MemoryStream();
+                blob.DownloadTo(memoryStream); //zapisanie obrazka do strumienia pamięci RAM
+                var picture = memoryStream.ToArray(); //obrazek binarnie
+                //var pictureBase64 = Convert.ToBase64String(picture); //obrazek tekstowo
+
+                return picture;
+
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         public FilesController(ApiContext context, IWebHostEnvironment webHostEnvironment,
             ILogger<FilesController> logger, IAuthorizationService authorizationService,
@@ -40,6 +65,8 @@ namespace School.Controllers
             _logger = logger;
             _authorizationService = authorizationService;
             _userContextService = userContextService;
+            container = new BlobContainerClient(blobStorageConnectionString, blobStorageContainerName);
+
         }
 
         // GET: /api
@@ -49,7 +76,14 @@ namespace School.Controllers
         {
             try
             {
-                return await _context.Files.ToListAsync();
+                var notes = _context.Files.ToList();
+                foreach (var note in notes)
+                {
+                    note.FileUpload = BlobAsByte(note.fileUploadName);
+                }
+               
+                //return await _context.Files.ToListAsync();
+                return notes;
             }
             catch (Exception e)
             {
@@ -68,6 +102,7 @@ namespace School.Controllers
                 {
                     throw new NotFoundException("File not found");
                 }
+                file.FileUpload = BlobAsByte(file.fileUploadName);
                 return file;
             }
             catch (Exception)
@@ -86,10 +121,18 @@ namespace School.Controllers
             {
                 throw new NotFoundException("File not found");
             }
-            if (file.FileUpload == null)
+            try
             {
-                return NotFound();
+                file.FileUpload = BlobAsByte(file.fileUploadName);
+                if (file.FileUpload == null)
+                {
+                    return NotFound();
+                }
+            } catch (Exception e)
+            {
+                return BadRequest(e.ToString());
             }
+
             byte[] byteArr = file.FileUpload;
             string mimeType = "multipart/form-data";
             return new FileContentResult(byteArr, mimeType)
@@ -103,11 +146,15 @@ namespace School.Controllers
         {
             try
             {
-                using (var target = new MemoryStream())
-                {
-                    FormFile.CopyTo(target);
-                    file.FileUpload = target.ToArray();
-                }
+                //using (var target = new MemoryStream())
+                //{
+                //    FormFile.CopyTo(target);
+                //    file.FileUpload = target.ToArray();
+                //}
+                var blob = container.GetBlobClient(FormFile.FileName);
+                var uploadFileStream = FormFile.OpenReadStream();
+                await blob.UploadAsync(uploadFileStream, true);
+                uploadFileStream.Close();
                 file.CreatedOn = DateTime.Now;
                 //var userId = _userContextService.GetUserId;
                 //var user = await _context.Users.FindAsync(userId);
@@ -137,15 +184,22 @@ namespace School.Controllers
             {
                 return BadRequest();
             }
-
-            if (file.FileUpload != null)
+            try
             {
-                using (var target = new MemoryStream())
+                if (file.FileUpload != null)
                 {
-                    FormFile.CopyTo(target);
-                    file.FileUpload = target.ToArray();
+                    //file.FileUpload = BlobAsByte(file.fileUploadName);
+                    var blob = container.GetBlobClient(FormFile.FileName);
+                    var uploadFileStream = FormFile.OpenReadStream();
+                    await blob.UploadAsync(uploadFileStream, true);
+                    uploadFileStream.Close();
                 }
+            } catch (Exception e)
+            {
+                return new ContentResult() { Content = e.ToString() };
+                //return BadRequest(e.ToString());
             }
+            
             file.CreatedOn = DateTime.Now;
             file.UploadedBy = "user";
             _context.Entry(file).State = EntityState.Modified;
@@ -183,12 +237,12 @@ namespace School.Controllers
                 return NotFound();
             }
 
-            var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, fileToUpdate, new ResourceOperationRequirement(ResourceOperation.Update)).Result;
+            //var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, fileToUpdate, new ResourceOperationRequirement(ResourceOperation.Update)).Result;
 
-            if (!authorizationResult.Succeeded)
-            {
-                throw new ForbidException();
-            }
+            //if (!authorizationResult.Succeeded)
+            //{
+            //    throw new ForbidException();
+            //}
 
             fileToUpdate.Name = file.Name;
             fileToUpdate.Description = file.Description;
@@ -227,12 +281,12 @@ namespace School.Controllers
             {
                 throw new NotFoundException("File not found");
             }
-            var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, fileToUpdate, new ResourceOperationRequirement(ResourceOperation.Update)).Result;
+            //var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, fileToUpdate, new ResourceOperationRequirement(ResourceOperation.Update)).Result;
 
-            if (!authorizationResult.Succeeded)
-            {
-                throw new ForbidException();
-            }
+            //if (!authorizationResult.Succeeded)
+            //{
+            //    throw new ForbidException();
+            //}
 
             fileUpdates.ApplyTo(fileToUpdate);
             fileToUpdate.CreatedOn = DateTime.Now;
@@ -255,12 +309,12 @@ namespace School.Controllers
                 throw new NotFoundException("File not found");
             }
 
-            var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, file, new ResourceOperationRequirement(ResourceOperation.Delete)).Result;
+            //var authorizationResult = _authorizationService.AuthorizeAsync(_userContextService.User, file, new ResourceOperationRequirement(ResourceOperation.Delete)).Result;
 
-            if (!authorizationResult.Succeeded)
-            {
-                throw new ForbidException();
-            }
+            //if (!authorizationResult.Succeeded)
+            //{
+            //    throw new ForbidException();
+            //}
 
             _context.Files.Remove(file);
             await _context.SaveChangesAsync();
