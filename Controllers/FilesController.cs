@@ -32,6 +32,7 @@ namespace School.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IUserContextService _userContextService;
 
+        string StorageConnectionString = Environment.GetEnvironmentVariable("StorageConnectionString");
         string blobStorageContainerName = "pictures";
         BlobContainerClient container;
         QueueClient queueClient;
