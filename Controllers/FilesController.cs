@@ -1,4 +1,6 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
+using Azure.Storage.Queues.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -30,9 +32,10 @@ namespace School.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IUserContextService _userContextService;
 
-        string blobStorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=schoolnotesstorage;AccountKey=zN8aJJQ46JsRQxPp2lhdbsEfBn6tsdD1dCXWhEM0xzdXKu1nHuuRRHrquagEJKb5IgnlP6pTTJTY+AStkpUsFA==;EndpointSuffix=core.windows.net";
         string blobStorageContainerName = "pictures";
         BlobContainerClient container;
+        QueueClient queueClient;
+        string queueName = "schoolnotesqueue";
 
         public IFormFile FormFile { get; set; }
 
@@ -56,6 +59,23 @@ namespace School.Controllers
             }
         }
 
+        [HttpGet("peekMessages")]
+        public ActionResult<string> PeekMessage()
+        {
+            if (queueClient.Exists())
+            {
+                // Peek at the next message
+                PeekedMessage[] peekedMessage = queueClient.PeekMessages();
+
+                // Display the message
+               return Ok($"Peeked message: '{peekedMessage[0].Body}'");
+            }
+            else
+            {
+                return BadRequest("Error with messages");
+            }
+        }
+
         public FilesController(ApiContext context, IWebHostEnvironment webHostEnvironment,
             ILogger<FilesController> logger, IAuthorizationService authorizationService,
             IUserContextService userContextService)
@@ -65,7 +85,16 @@ namespace School.Controllers
             _logger = logger;
             _authorizationService = authorizationService;
             _userContextService = userContextService;
-            container = new BlobContainerClient(blobStorageConnectionString, blobStorageContainerName);
+            try
+            {
+                container = new BlobContainerClient(StorageConnectionString, blobStorageContainerName);
+                queueClient = new QueueClient(StorageConnectionString, queueName);
+                queueClient.CreateIfNotExists();
+            } catch (Exception e)
+            {
+                Console.WriteLine($"Exception: {e.Message}\n\n");
+                Console.WriteLine($"Make sure the Azurite storage emulator running and try again.");
+            }
 
         }
 
@@ -81,7 +110,11 @@ namespace School.Controllers
                 {
                     note.FileUpload = BlobAsByte(note.fileUploadName);
                 }
-               
+                if (queueClient.Exists())
+                {
+                    // Send a message to the queue
+                    queueClient.SendMessage("Got Files list");
+                }
                 //return await _context.Files.ToListAsync();
                 return notes;
             }
@@ -164,6 +197,12 @@ namespace School.Controllers
                 file.fileUploadName = filename;
                 _context.Files.Add(file);
                 await _context.SaveChangesAsync();
+                if (queueClient.Exists())
+                {
+                    // Send a message to the queue
+                    queueClient.SendMessage($"Created File: {file}");
+                    return Ok($"Created File: {file}");
+                }
                 return CreatedAtAction(nameof(GetFile), routeValues: new { id = file.ID }, value: file);
             }
             catch (Exception e)
@@ -250,6 +289,12 @@ namespace School.Controllers
             fileToUpdate.CreatedOn = DateTime.Now;
             fileToUpdate.UploadedBy = "user";
             _context.Entry(fileToUpdate).State = EntityState.Modified;
+            if (queueClient.Exists())
+            {
+                // Send a message to the queue
+                queueClient.SendMessage($"Edited File: {file}");
+                return Ok($"Edited File: {file}");
+            }
 
             try
             {
@@ -317,6 +362,14 @@ namespace School.Controllers
             //}
 
             _context.Files.Remove(file);
+
+            if (queueClient.Exists())
+            {
+                // Send a message to the queue
+                queueClient.SendMessage($"Deleted File with Id: {id}");
+                return Ok($"Deleted File with Id: {id}");
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();
